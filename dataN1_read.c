@@ -1,17 +1,30 @@
-// Created by sagus on 25/01/17.
-/*  [samples header time location] = dataN1_read(filename, varargin);
-    DATAN1_HEADER Lee y parsea los datos de Nivel 1
-    filename: nombre del archivo a leer.
-    dn1:  cell array con las muestras de varios pulsos, para ambas polaridades
-    header: header de cada pulso de dn1
-    dn1: vectores columnas con las muestras complejas o reales segun
-    corresponda leidas del archivo 'filename'.
-    header: encabezado del dato N1.
-*/
+/** \file dataN1_read.c
+ *  \brief Read N1 data files and store in a double double linked list of N1 structures
+ *  \author Agustín Martina (amartina@unc.edu.ar)
+ *
+ *  This function gets a file descriptor to a N1 file, and loads into a double double
+ *  link of data N1 file. One linked list of Headers structures and the second
+ *  of IQ data elements. It also can receive N dynamic parameters. Functions
+ *  to use this dynamic parameters are not implemented yet.
+ *
+ *  \param[in] filename - File descriptor to a N1 data file
+ *  \param[in] n_args - Number of dynamic parameters function is waiting
+ *  \param[out] nodeHeader - Double double linked list of N1 data structures
+ *
+ *  \version 0.8
+ *
+ *  \todo Open N1 file dialog box if n_args=0
+ *  \todo Read all IQ data into a malloc and then took the IQ form memory
+ *  \todo check if zero as first data is in all rays or just the first ray
+ *
+ *  \see dataN1_read_header.c
+**/
 
 #include "dataN1_header.h"
 #include "libs/list.h"
 #include <errno.h>
+#include <string.h>
+#include <malloc.h>
 #include <fcntl.h>
 #include <stdarg.h>         /* ISO C variable aruments */
 
@@ -23,11 +36,12 @@
 
 struct Node *dataN1_read(char *filename,int n_args, ...){
         int idx;
+        extern int errno;
+        size_t error;
 
         struct Node *nodeHeader;
         struct Header h;
         struct data d = {0,0,0,0};
-
 
         va_list ap;
         va_start(ap, n_args);
@@ -52,7 +66,7 @@ struct Node *dataN1_read(char *filename,int n_args, ...){
 
         fid = fopen(filename, "r");
         if (fid == NULL){
-                printf("FOPEN: err %d \n", errno);
+                perror("Error in open N1 file");
                 return 0;
         }
 
@@ -76,7 +90,7 @@ struct Node *dataN1_read(char *filename,int n_args, ...){
                         case 2: {
                                 if (idx < m) {
                                         if (fseek(fid, h.validSamples*max_channel*iq*sample_size, SEEK_CUR)!= 0) {    // in matlab fseek(fid, h.validSamples*MAX_CHANNEL*IQ*SAMPLE_SIZE, 'cof');
-                                                fprintf(stderr, "ERROR: Fseek, Value of errno: %d\n", errno);
+                                                perror("ERROR: Fseek, Value of errno");
                                                 exit(EXIT_FAILURE);
                                         }
                                         m++;
@@ -85,23 +99,74 @@ struct Node *dataN1_read(char *filename,int n_args, ...){
                                 }
 
                                 /* Implementation of a doubly linked list to store the N headers */
-                                printf("ENTRA A onsert head\n");
                                 nodeHeader = InsertAtHead(h, nodeHeader);
 
                                 /* Buffered all pulse ray, H and V channels, I and Q data*/
-                                float* buffer = malloc(sizeof(float)*(h.validSamples*iq*max_channel));
-                                int error=fread(&buffer, sizeof(buffer),1,fid);
+                                /*float* buffer = malloc(sizeof(float)*h.validSamples*iq*max_channel);
+                                        size_t error=fread(&buffer, sizeof(buffer),1,fid);
+                                        if (error==0){
+                                                perror("Error reading Ray");
+                                        }
+                                */
+                                /** The IQ data has the next structure
+                                 *  V_I[1]
+                                 *  V_Q[1]
+                                 *  V_I[..]
+                                 *  V_Q[..]
+                                 *  V_I[validSamples]
+                                 *  V_Q[validSamples]
+                                 *  H_I[1]
+                                 *  H_Q[1]
+                                 *  H_I[..]
+                                 *  H_Q[..]
+                                 *  H_I[validSamples]
+                                 *  H_Q[validSamples]
+                                 *  So first we fill all V data, and then all H
+                                 **/
+                                /* There is a ZERO in first data" */
+                                error=fread(&d.V_I, sizeof(float),1,fid);
                                 if (error==0){
-                                        perror("Error en lectura\n");
+                                        perror("Error reading Ray");
                                 }
-                                /* ARRAY DE STRUCTS, cuantas */
+
+                                int counter=0;
+                                /** we read all V (I and Q) into IQ structure **/
                                 for(int i=0; i<h.validSamples;i++){
-                                        d.V_I=0;//(&buffer+sizeof(float)*2*i);//buffer[sizeof(float)*2*i];
+                                        error=fread(&d.V_I, sizeof(float),1,fid);
+                                        if (error==0){
+                                                perror("Error reading Ray");
+                                        }
+                                        error=fread(&d.V_Q, sizeof(float),1,fid);
+                                        if (error==0){
+                                                perror("Error reading Ray");
+                                        }
+                                        InsertDataAtTailDirect(d, nodeHeader);
+                                }
+                                /** we need to go back to the head of the IQ list **/
+                                nodeHeader = rewindIQ(nodeHeader);
+
+                                /** so now we fill with H data **/
+                                for(int i=0; i<h.validSamples; i++){
+
+                                        //memcpy(&d.V_I, buffer, sizeof(float));//(&buffer+sizeof(float)*2*i);//buffer[sizeof(float)*2*i];
                                         /*d.V_Q=buffer[sizeof(float)*(2*i+1)];
                                         d.H_I=((float *)buffer)[sizeof(float)*(h.validSamples+2*i)];
                                         d.H_Q=((float *)buffer)[sizeof(float)*(h.validSamples+2*i+1)];*/
-                                        
-                                        nodeHeader = InsertDataAtHead(d, nodeHeader);
+                                        /*counter ++;
+                                        if(counter==h.validSamples){
+                                                printf("its the last!");
+                                                return 0;
+                                        }
+                                        */
+                                        error=fread(&d.H_I, sizeof(float),1,fid);
+                                        if (error==0){
+                                                perror("Error reading Ray");
+                                        }
+                                        error=fread(&d.H_Q, sizeof(float),1,fid);
+                                        if (error==0){
+                                                perror("Error reading Ray");
+                                        }
+                                        nodeHeader = InsertDataHAtHead(d, nodeHeader);
                                 }
                                 //size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
                                 /*for(ii = 1, i <= max_channel, ii++) {
@@ -111,9 +176,9 @@ struct Node *dataN1_read(char *filename,int n_args, ...){
                                                 (2 * (ii - 1) * header(n).validSamples + 2):2:2 * ii
                                                 * header(n).validSamples));
                                 }*/
-                                free(buffer);
+                                //free(buffer);
                                 break;
-                        }
+                                }
                         default:
                                 perror("ERROR: Exit by default, no compatible version\n");
                                 break;
@@ -124,5 +189,4 @@ struct Node *dataN1_read(char *filename,int n_args, ...){
         }
         fclose(fid);
         return nodeHeader;
-
 }
