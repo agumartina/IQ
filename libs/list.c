@@ -1,23 +1,22 @@
-//
-// Created by sagus on 02/02/17.
-//
-/* Doubly Linked List implementation */
+/** \file list.c
+ *  \brief Double linked list implementations
+ *  \author Agustín Martina (amartina@unc.edu.ar)
+ *
+ * \todo CountNodes functions: counts the length of a linked list
+**/
 #include "list.h"
-
 #include<stdio.h>
 
-
+/** \brief node of IQ data structure
+**/
 struct Data {
         struct data muestra;
         struct Data* next;
         struct Data* prev;
 };
 
-/*
- * Nodos de la Lista
- * header es una estructura con la cabecera de un pulso
- * next y prev apuntan a los nodos vecinos
- */
+/** \brief node of Header data structure
+**/
 struct Node {
         struct Header head;
         struct Data *datos;
@@ -25,6 +24,10 @@ struct Node {
         struct Node *prev;
 };
 
+/** \brief Creates a new node to be inserted into a list of Headers
+ * \param[in] x - Header data of a pulse
+ * \param[out] newNode - node with the header data
+**/
 //Creates a new Node and returns pointer to it.
 struct Node *GetNewNode(struct Header x) {
         struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
@@ -33,17 +36,25 @@ struct Node *GetNewNode(struct Header x) {
         newNode->next = NULL;
         return newNode;
 }
-/*
- * INICIALIZACIÓN DE UNA LISTA
- * El usuario debe llamar a esta función para obtener la cabecera de una lista.
- * La misma crea una estructura nodo y la devuelve apuntando a NULL
- */
+
+/** \brief Initialize a linked list with NULL head.
+ *
+ * The user must call this function to get a head of a new linked list.
+ * This functions declare an empty node (pointing null)
+ *
+ * \param[out] head - head of a new linked list
+**/
 struct Node *GetHeadNull(){
         struct Node *head; // global variable - pointer to head node.
         return head = NULL;
 }
 
-//Inserts a Node at head of doubly linked list
+
+/** \brief Insert a node at the head of a linked list.
+ *
+ * \param[in]x - A Header structure to be inserted
+ * \param[in,out] head - Head of the target linked list
+**/
 struct Node *InsertAtHead(struct Header x, struct Node *head) {
         struct Node* newNode = GetNewNode(x);
 
@@ -66,13 +77,21 @@ struct Node *InsertAtHead(struct Header x, struct Node *head) {
         return head;
 }
 
+/** \brief TODO Length linked list counter
+ *
+ * \param[in] head - Head of the linked list to be measured
+**/
 int CountNodes(struct Node *head){
         /*
          * TO BE IMPLEMENTED
          */
 }
 
-//Inserts a Node at tail of Doubly linked list
+/** \brief Insert a Node at the tail of doubly linked list
+ *
+ * @param x[in] - Header structure to be inserted
+ * @param head[in,out] - Head of the double linked list target
+ */
 void InsertAtTail(struct Header x, struct Node *head) {
         struct Node* temp = head;
         struct Node* newNode = GetNewNode(x);
@@ -87,7 +106,11 @@ void InsertAtTail(struct Header x, struct Node *head) {
         newNode->datos=NULL;
 }
 
-//Prints all the elements in linked list in forward traversal order
+
+/** \brief Prints all elements of a doubly linked list in a LIFO way
+ *
+ * @param head[in] - Head of the double linked list target
+ */
 void PrintList(struct Node *head) {
         struct Node* temp = head;
         FILE *fheader;
@@ -104,7 +127,10 @@ void PrintList(struct Node *head) {
         fclose(fheader);
 }
 
-//Prints all elements in linked list in reverse traversal order.
+/** \brief Prints all elements of a doubly linked list in a FIFO (reverse) way
+ *
+ * @param head[in] - Head of the double linked list target
+ */
 void ReversePrintList(struct Node *head) {
         struct Node* temp = head;
         if(temp == NULL) return; // empty list, exit
@@ -129,8 +155,11 @@ void ReversePrintList(struct Node *head) {
 /*
  * Funciones de la lista de datos
  */
-//Creates a new Data and returns pointer to it.
 
+/** \brief Creates a new Data node (IQ) and returns pointer to it.
+ *
+ * @param x[in] - Data IQ structure
+ */
 struct Data *GetNewDataNode(struct data x) {
         struct Data* newDataNode = (struct Data*)malloc(sizeof(struct Data));
         newDataNode->muestra = x;
@@ -139,7 +168,11 @@ struct Data *GetNewDataNode(struct data x) {
         return newDataNode;
 }
 
-//Inserts a Data at head of doubly linked list
+/** \brief Insert a node of IQ data at the head of a Data linked list.
+ *
+ * \param[in]x - A V structure to be inserted
+ * \param[in,out] head - Head of the target linked list
+**/
 struct Node *InsertDataAtHead(struct data x, struct Node *head) {
         struct Data* newData = GetNewDataNode(x);
 
@@ -147,7 +180,7 @@ struct Node *InsertDataAtHead(struct data x, struct Node *head) {
         if(head->datos == NULL) {
                 head->datos = newData;
                 //BORRAR
-                printf("CONTROL: PRIMERO!!! HI=%f, HQ=%f \n", head->datos->muestra.H_I, head->datos->muestra.H_Q);
+                //printf("CONTROL: PRIMERO!!! HI=%f, HQ=%f \n", head->datos->muestra.H_I, head->datos->muestra.H_Q);
                 return head;
         }
 
@@ -157,13 +190,32 @@ struct Node *InsertDataAtHead(struct data x, struct Node *head) {
         head->datos = newData;
 
         //BORRAR
-        printf("CONTROL: HI=%f, HQ=%f \n", head->datos->muestra.H_I, head->datos->muestra.H_Q);
+        //printf("CONTROL: HI=%f, HQ=%f \n", head->datos->muestra.H_I, head->datos->muestra.H_Q);
 
         return head;
 }
 
-//Inserts a Data at tail of Doubly linked list
-void DATAInsertAtTail(struct data x, struct Node *head) {
+/** \brief Insert a node of H IQ data at the head of a Data linked list.
+ *
+ * \param[in]x - A H structure to be inserted
+ * \param[in,out] head - Head of the target linked list
+**/
+struct Node *InsertDataHAtHead(struct data x, struct Node *head) {
+
+        head->datos->muestra.H_I=x.H_I;
+        head->datos->muestra.H_Q=x.H_Q;
+
+        head->datos=head->datos->next;
+
+        return head;
+}
+
+/** \brief Insert a node of IQ data at the tail of a Data linked list.
+ *
+ * \param[in]x - A IQ structure to be inserted
+ * \param[in,out] head - Head of the target linked list
+**/
+void InsertDataAtTail(struct data x, struct Node *head) {
         struct Node* temp = head;
         struct Data* newData = GetNewDataNode(x);
         if(head->datos == NULL) {
@@ -175,22 +227,54 @@ void DATAInsertAtTail(struct data x, struct Node *head) {
         newData->prev = temp->datos;
 }
 
-//Prints all the elements in linked list in forward traversal order
+
+/** \brief Insert a node of IQ data at the tail of a Data linked list and returns that header
+ *
+ * \param[in]x - A IQ structure to be inserted
+ * \param[in,out] head - Head of the target linked list
+**/
+struct Node *InsertDataAtTailDirect(struct data x, struct Node *head) {
+
+        struct Data* newData = GetNewDataNode(x);
+        if(head->datos == NULL) {
+                head->datos = newData;
+                return head;
+        }
+        while(head->datos->next != NULL) head->datos = head->datos->next; // Go To last Data
+        head->datos->prev = head->datos;
+        head->datos=newData;
+
+        return head;
+}
+
+/** @brief This function go back to the first IQ data
+ *
+ * We need to return to the first IQ data to fill the data structure with H_I and H_Q
+ *
+ * @param[in,out] head - Data N1 structure
+ */
+struct Node *rewindIQ(struct Node *head){
+        while(head->datos->prev != NULL) {
+                head->datos = head->datos->prev;
+        }
+        return head;
+}
+
+/** @brief Prints all the IQ elements in linked list in forward traversal order
+ *
+ * @param head - Head of the linked list to be printed
+ */
 void PrintDataList(struct Node *head) {
         struct Node* temp = head;
-        int cont=0;
+
        //FILE *fheader;
         //header=fopen("data.csv","w");
 
-        while(temp != NULL) {
+        while(temp->datos != NULL) {
+                printf("V_I, V_Q | H_I, H_Q\n");
+                printf("%.16f, %.16fi| %.16f, %.16fi\n", temp->datos->muestra.V_I, temp->datos->muestra.V_Q, temp->datos->muestra.H_I, temp->datos->muestra.H_Q);
 
-            if(cont==0) {
-                        printf("V_I, V_Q | H_I, H_Q\n");
-
-                        printf("%.16f, %.16fi| %.16f, %.16fi\n", temp->datos->muestra.V_I, temp->datos->muestra.V_Q, temp->datos->muestra.H_I, temp->datos->muestra.H_Q);
-            }
-                temp = temp->next;
-                cont++;
+                temp->datos = temp->datos->next;
         }
         //close(fheader);
 }

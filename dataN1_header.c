@@ -1,14 +1,25 @@
+/** \file dataN1_header.c
+ *  \brief DataN1 file pulse header reader
+ *  \author Agustín Martina (amartina@unc.edu.ar)
+ *
+ *  This function receive a file descriptor to a data N1 file, read its pulse headers
+ *  and return the data loaded intro a Header structure.
+ *
+ *  \param[in] fid - File descriptor of a N1 file
+ *  \param[out] header - Header structure with header data
+**/
+
 #include "structures.h"
 #include "dataN1_header.h"
 #include <errno.h>
 
-struct Header dataN1_header(FILE * fid){
+struct Header dataN1_header(FILE *fid){
 
     size_t control;
     struct Header header;
     uint16_t version;
     uint32_t unifierMethod;
-    extern int errno;
+    //extern int errno;
 
     /* control struct empty */
     header.version=9999;

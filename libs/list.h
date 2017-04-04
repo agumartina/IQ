@@ -14,6 +14,9 @@ void PrintList(struct Node*);
 void ReversePrintList(struct Node*);
 
 struct Node *InsertDataAtHead(struct data, struct Node*);
-void DATAInsertAtTail(struct data, struct Node*);
+struct Node *InsertDataHAtHead(struct data , struct Node *);
+void InsertDataAtTail(struct data, struct Node*);
+struct Node *InsertDataAtTailDirect(struct data, struct Node *);
 void PrintDataList(struct Node*);
+struct Node *rewindIQ(struct Node *);
 #endif //IQ_LIST_H

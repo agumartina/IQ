@@ -1,10 +1,21 @@
-
-// Created by sagus on 26/01/17.
-/* [ header ] = dataN1_read_header( filename, varargin )
- *  DATAN1_READ_HEADER Lee y parsea los datos de Nivel 1
- *  filename: nombre del archivo a leer.
- *  header: encabezado del dato N1.
- */
+/** \file dataN1_read_header.c
+ *  \brief Read N1 pulse headers and store in a double linked list of N1 Headers structs
+ *  \author Agustín Martina (amartina@unc.edu.ar)
+ *
+ *  This function gets a file descriptor to a N1 file, reads its pulse headers, and loads
+ *  into a double link of data N1 header file. It also can receive N dynamic parameters.
+ *  Functions to use this dynamic parameters are not implemented yet.
+ *
+ *  \param[in] filename - File descriptor to a N1 data file
+ *  \param[in] n_args - Number of dynamic parameters function is waiting
+ *  \param[out] nodeHeader - Double linked list of N1 data structures
+ *
+ *  \version 0.8
+ *
+ *  \todo Open N1 file dialog box if n_args=0
+ *
+ *  \see dataN1_read.c
+**/
 
 #include "dataN1_header.h"
 #include "libs/list.h"
